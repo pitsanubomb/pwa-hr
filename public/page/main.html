@@ -21,6 +21,20 @@
     <title>PWA</title>
 </head>
 <style>
+    .bd-placeholder-img {
+        font-size: 1.125rem;
+        text-anchor: middle;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        user-select: none;
+    }
+
+    @media (min-width: 768px) {
+        .bd-placeholder-img-lg {
+            font-size: 3.5rem;
+        }
+    }
+
     body {
         margin: 0;
         padding: 0;
@@ -165,13 +179,24 @@
 </style>
 
 <body>
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="#">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="history" href="../page/history.html">History</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="user" href="../page/user.html">User</a>
+        </li>
+    </ul>
     <div class="card">
         <div class="box">
             <div class="img">
                 <img src="https://cdn.pixabay.com/photo/2020/07/01/12/58/icon-5359553_1280.png">
             </div>
             <div id="MyClockDisplay" class="clock" onload="showTime()"></div>
-            <h2>Test Demo<br><span>Guest</span></h2>
+            <h2 id="name">Test Demo<br><span>Guest</span></h2>
             <div id="load" style="display: none;" class="lds-ring mx-auto">
                 <div></div>
                 <div></div>
@@ -180,9 +205,9 @@
             </div>
             <span id="stamp">
                 <ul>
-                    <li><button type="button" class="btn btn-primary" onclick="clock('in')">Clock In</button></li>
+                    <li><button type="button" class="btn btn-primary" onclick="clock('1')">Clock In</button></li>
                     <li class="ml-2">
-                        <button type="button" class="btn btn-danger" onclick="clock('out')">Clock
+                        <button type="button" class="btn btn-danger" onclick="clock('2')">Clock
                             Out</button>
                     </li>
                 </ul>
@@ -201,7 +226,17 @@
 
 </html>
 <script src="../src/app.js"></script>
+<script src="../src/fetch.js"></script>
 <script>
+    const uri = 'https://datawarehouse.giize.com'
+    async function getMe() {
+        const { user } = await getAuth(`${uri}/auth/me`)
+        console.log(user)
+        document.getElementById('name').innerHTML = user.name + ' ' + user.surname
+    }
+
+    getMe()
+
     const lat = 13.7492727
     const long = 100.5418493
     let clockType
@@ -222,27 +257,39 @@
         console.log(`Latitude : ${crd.latitude}`);
         console.log(`Longitude: ${crd.longitude}`);
         console.log(`More or less ${crd.accuracy} meters.`);
-        if (calcCrow(lat, long, crd.latitude, crd.longitude) <= 50) alert(`Success`)
-        else alert(`fail`)
-        if (clockType === 'in') {
-            clockIn.push({
-                latitude: crd.latitude,
-                longitude: crd.longitude
-            })
+        // if (calcCrow(lat, long, crd.latitude, crd.longitude) <= 50) alert(`Success`)
+        // else alert(`fail`)
+        // if (clockType === 'in') {
+        //     clockIn.push({
+        //         latitude: crd.latitude,
+        //         longitude: crd.longitude
+        //     })
 
-            localStorage.setItem('clockIn', JSON.stringify(clockIn))
-        }
+        //     localStorage.setItem('clockIn', JSON.stringify(clockIn))
+        // } else {
+        //     clockOut.push({
+        //         latitude: crd.latitude,
+        //         longitude: crd.longitude
+        //     })
+        //     localStorage.setItem('clockOut', JSON.stringify(clockOut))
+        // }
 
-        else {
-            clockOut.push({
-                latitude: crd.latitude,
-                longitude: crd.longitude
-            })
-            localStorage.setItem('clockOut', JSON.stringify(clockOut))
-        }
+        console.log(crd)
+        console.log(new Date().toTimeString())
+
+        postAuth(`${uri}/timestamp`, {
+            "timestampType": clockType,
+            "isModify": false,
+            "timestamp": Date.now() / 1000 | 0,
+            "latitude": `${crd.latitude}`,
+            "longitude": `${crd.longitude}`,
+        }).then((res) => {
+            alert(`Success . . .`)
+            location.reload()
+        })
 
 
-        location.reload();
+        // location.reload();
     }
 
     function error(err) {
