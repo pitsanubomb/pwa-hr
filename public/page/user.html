@@ -95,6 +95,13 @@
                         const test = 'ss'
                         return `<button type="button" value='${email}' onclick="sendMail(this)" class="btn btn-info">Sendmail</button>`;
                     }
+                }, {
+                    data: 'uid',
+                    render: function (data, type, row) {
+                        const uid = data
+                        const test = 'ss'
+                        return `<button type="button" value='${uid}' onclick="getHistory(this)" class="btn btn-info">History</button>`;
+                    }
                 }]
             })
         })
@@ -109,6 +116,11 @@
             // console.log(data)
             alert(data.message)
         })
+    }
+
+    function getHistory({ value }) {
+        console.log(value)
+        window.location.href = `userhistory.html?uid=${value}`;
     }
 </script>
 
