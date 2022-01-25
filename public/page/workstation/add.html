@@ -21,12 +21,12 @@
 
 
     <!-- Map Leaf Left JS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
         integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
         crossorigin="" />
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
         integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-        crossorigin=""></script>
+        crossorigin=""></script> -->
     <title>PWA</title>
 </head>
 <style>
@@ -37,25 +37,64 @@
 
 <body>
     <div class="container">
-        <form method="post">
+        <form id="form">
+            Workspace Name
+            <input type="text" value="" id="workspace">
             latitude
-            <input type="text" value="" id="latitude" onkeydown="latitude(this)">
+            <input type="text" value="" id="latitude">
             longitude
-            <input type="text" value="" id="longitude" onkeydown="longitude(this)">
-            <input type="range" id="radius" name="radius" min="0" max="5000" value=200 onchange="radius()">
+            <input type="text" value="" id="longitude">
+            <input type="range" id="radius" name="radius" min="0" max="5000" value=200>
+            <input type="number" value=200 id="rv"> meters
             <input type="submit">
         </form>
         <div id="map"></div>
     </div>
 </body>
+<script src="../../src/fetch.js"></script>
+<!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKwLIazdyTKcdPnSesICrKqPU6azFA3Ms&callback=initMap&v=weekly"
+    async></script>
 <script>
-    // initialize the map
+    let map;
 
-    var options = {
+    const form = document.getElementById("form");
+    form.onsubmit = submit;
+    const uri = 'https://datawarehouse.giize.com/hr'
+    function submit(e) {
+        e.preventDefault();
+        console.log(e)
+        postAuth(`${uri}/workspace`, {
+            "workspaceName": e.target[0].value,
+            "latitude": parseFloat(e.target[2].value),
+            "longitude": parseFloat(e.target[2].value),
+            "radius": e.target[3].value
+        }).then((data) => {
+            // console.log(data)
+            if (data.statusCode === 201) {
+                alert("Add data success")
+            }
+            // alert(data.data)
+        })
+    }
+
+    const options = {
         enableHighAccuracy: true,
         timeout: 5000,
         maximumAge: 0
     };
+
+    let marker
+    let radiusMap
+
+    // Get location to render Map
+    navigator.geolocation.getCurrentPosition(success, error, options);
+
+    function error(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+
 
     function success(pos) {
         var crd = pos.coords;
@@ -64,41 +103,93 @@
         console.log(`Latitude : ${crd.latitude}`);
         console.log(`Longitude: ${crd.longitude}`);
         console.log(`More or less ${crd.accuracy} meters.`);
-        let map = L.map('map').setView([crd.latitude, crd.longitude], 16);
 
         document.getElementById('latitude').value = crd.latitude;
         document.getElementById('longitude').value = crd.longitude;
+        // initMap(crd.latitude, crd.longitude);
 
-        L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
-            attribution: '& copy; <a href=" https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
-        L.circle([crd.latitude, crd.longitude], { radius: 200, color: 'red' }).addTo(map);
-        L.marker([crd.latitude, crd.longitude]).addTo(map);
+        const latLong = new google.maps.LatLng(crd.latitude, crd.longitude);
+        map = new google.maps.Map(document.getElementById("map"), {
+            center: latLong,
+            zoom: 15,
+        });
+
+        map.addListener("click", (e) => {
+            console.log(e.latLng.toJSON())
+            document.getElementById('latitude').value = e.latLng.toJSON().lat;
+            document.getElementById('longitude').value = e.latLng.toJSON().lng;
+            placeMarkerAndPanTo(e.latLng, map, parseInt(document.getElementById('radius').value));
+        });
+
+        document.getElementById('latitude').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('radius').value))
+        })
+
+
+        document.getElementById('longitude').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('radius').value))
+        })
+
+        document.getElementById('radius').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('radius').value))
+            document.getElementById('rv').value = parseInt(document.getElementById('radius').value)
+        })
+
+
+        document.getElementById('rv').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('rv').value))
+            document.getElementById('radius').value = parseInt(document.getElementById('rv').value)
+        })
+
+        marker = new google.maps.Marker({
+            // The below line is equivalent to writing:
+            // position: new google.maps.LatLng(-34.397, 150.644)
+            position: { lat: crd.latitude, lng: crd.longitude },
+            map: map,
+        });
+
+        radiusMap = new google.maps.Circle({
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#FF0000",
+            fillOpacity: 0.35,
+            map,
+            center: { lat: crd.latitude, lng: crd.longitude },
+            radius: parseInt(document.getElementById('radius').value),
+        });
     }
 
-    function error(err) {
-        console.warn(`ERROR(${err.code}): ${err.message}`);
+
+
+    function placeMarkerAndPanTo(latLng, map, r) {
+        radiusMap.setMap(null);
+        marker.setMap(null);
+        marker = new google.maps.Marker({
+            position: latLng,
+            map: map,
+        });
+        map.panTo(latLng);
+
+        radiusMap = new google.maps.Circle({
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#FF0000",
+            fillOpacity: 0.35,
+            map,
+            center: latLng,
+            radius: r,
+        });
     }
-
-    function radius() {
-        alert("aaaa")
-    }
-
-    function longitude({ value }) {
-        L.circle([crd.latitude, value], { radius: 200, color: 'red' }).addTo(map);
-        L.marker([crd.latitude,value]).addTo(map);
-    }
-
-    function latitude({ value }) {
-        L.circle([value, crd.longitude], { radius: 200, color: 'red' }).addTo(map);
-        L.marker([value, crd.longitude]).addTo(map);
-    }
-
-    // function latitude() {
-    //     alert("You pressed a key inside the input field");
-    // }
-
-    navigator.geolocation.getCurrentPosition(success, error, options);
 </script>
 
 </html>
