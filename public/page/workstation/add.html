@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+        crossorigin="anonymous"></script>
+    <link rel="manifest" href="mainfest.json">
+    <!-- ios support -->
+    <link rel="apple-touch-icon" href="/img/icons/icon-96x96.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#FFE1C4">
+    <meta name="theme-color" content="#FFE1C4">
+
+
+    <!-- Map Leaf Left JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+        crossorigin="" />
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+        crossorigin=""></script>
+    <title>PWA</title>
+</head>
+<style>
+    #map {
+        height: 500px;
+    }
+</style>
+
+<body>
+    <div class="container">
+        <form method="post">
+            latitude
+            <input type="text" value="" id="latitude" onkeydown="latitude(this)">
+            longitude
+            <input type="text" value="" id="longitude" onkeydown="longitude(this)">
+            <input type="range" id="radius" name="radius" min="0" max="5000" value=200 onchange="radius()">
+            <input type="submit">
+        </form>
+        <div id="map"></div>
+    </div>
+</body>
+<script>
+    // initialize the map
+
+    var options = {
+        enableHighAccuracy: true,
+        timeout: 5000,
+        maximumAge: 0
+    };
+
+    function success(pos) {
+        var crd = pos.coords;
+
+        console.log('Your current position is:');
+        console.log(`Latitude : ${crd.latitude}`);
+        console.log(`Longitude: ${crd.longitude}`);
+        console.log(`More or less ${crd.accuracy} meters.`);
+        let map = L.map('map').setView([crd.latitude, crd.longitude], 16);
+
+        document.getElementById('latitude').value = crd.latitude;
+        document.getElementById('longitude').value = crd.longitude;
+
+        L.tileLayer('https://maps.wikimedia.org/osm-intl/{z}/{x}/{y}.png', {
+            attribution: '& copy; <a href=" https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+        L.circle([crd.latitude, crd.longitude], { radius: 200, color: 'red' }).addTo(map);
+        L.marker([crd.latitude, crd.longitude]).addTo(map);
+    }
+
+    function error(err) {
+        console.warn(`ERROR(${err.code}): ${err.message}`);
+    }
+
+    function radius() {
+        alert("aaaa")
+    }
+
+    function longitude({ value }) {
+        L.circle([crd.latitude, value], { radius: 200, color: 'red' }).addTo(map);
+        L.marker([crd.latitude,value]).addTo(map);
+    }
+
+    function latitude({ value }) {
+        L.circle([value, crd.longitude], { radius: 200, color: 'red' }).addTo(map);
+        L.marker([value, crd.longitude]).addTo(map);
+    }
+
+    // function latitude() {
+    //     alert("You pressed a key inside the input field");
+    // }
+
+    navigator.geolocation.getCurrentPosition(success, error, options);
+</script>
+
+</html>

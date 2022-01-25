@@ -63,7 +63,7 @@
         getAuth(`${uri}/user`).then((d) => {
             console.log(d)
             $('#example').DataTable({
-                data: d.user,
+                data: d.data.user,
                 columns: [{
                     title: 'Email',
                     data: 'email'
@@ -102,6 +102,13 @@
                         const test = 'ss'
                         return `<button type="button" value='${uid}' onclick="getHistory(this)" class="btn btn-info">History</button>`;
                     }
+                },{
+                    data: 'uid',
+                    render: function (data, type, row) {
+                        const uid = data
+                        const test = 'ss'
+                        return `<button type="button" value='${uid}' onclick="verifyDevice(this)" class="btn btn-info">Verify Device</button>`;
+                    }
                 }]
             })
         })
@@ -121,6 +128,11 @@
     function getHistory({ value }) {
         console.log(value)
         window.location.href = `userhistory.html?uid=${value}`;
+    }
+
+    function verifyDevice({ value }) {
+        console.log(value)
+        window.location.href = `verifyuser?uid=${value}`;
     }
 </script>
 

@@ -58,17 +58,16 @@
     const urlSearchParams = new URLSearchParams(window.location.search);
     const params = Object.fromEntries(urlSearchParams.entries());
     const uri = 'https://datawarehouse.giize.com'
-    // const localUri = 'http://localhost.com:3000'
     async function getHistory(id) {
-        getAuth(`${uri}/timestamp/user/${id}`).then((d) => {
-            console.log(d)
+        getAuth(`${uri}/hr/timestamp/user/${id}`).then(({data}) => {
+            console.log({data})
             $('#example').DataTable({
                 "order": [3],
                 "columnDefs": [{
                     "targets": 'no-sort',
                     "orderable": false,
                 }],
-                data: d.timestamp,
+                data: data.timestamp,
                 columns: [
                     {
                         title: 'Clock Type', data: 'timestampType',

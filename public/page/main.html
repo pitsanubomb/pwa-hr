@@ -179,7 +179,7 @@
 </style>
 
 <body>
-    <ul class="nav">
+    <ul class="nav" id="admin" style="display:none;">
         <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="#">Home</a>
         </li>
@@ -230,8 +230,12 @@
 <script>
     const uri = 'https://datawarehouse.giize.com'
     async function getMe() {
-        const { user } = await getAuth(`${uri}/auth/me`)
+        const { data } = await getAuth(`${uri}/auth/me`)
+        const { user } = data
         console.log(user)
+        if(user.name === 'Admin') {
+            document.getElementById('admin').style.display = ''
+        }
         document.getElementById('name').innerHTML = user.name + ' ' + user.surname
     }
 
@@ -277,7 +281,7 @@
         console.log(crd)
         console.log(new Date().toTimeString())
 
-        postAuth(`${uri}/timestamp`, {
+        postAuth(`${uri}/hr/timestamp`, {
             "timestampType": clockType,
             "isModify": false,
             "timestamp": Date.now() / 1000 | 0,
@@ -298,6 +302,7 @@
 
     function logout() {
         localStorage.removeItem('isLogin')
+        localStorage.removeItem('auth')
         window.location.href = '/';
     }
 
