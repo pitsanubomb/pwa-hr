@@ -228,12 +228,12 @@
 <script src="../src/app.js"></script>
 <script src="../src/fetch.js"></script>
 <script>
-    const uri = 'https://whr.giize.com/api/auth'
+    const uri = 'https://whr.giize.com/api'
     async function getMe() {
-        const { data } = await getAuth(`${uri}/auth/me`)
+        const { data } = await getAuth(`${uri}/auth/auth/me`)
         const { user } = data
         console.log(user)
-        if(user.name === 'Admin') {
+        if (user.name === 'Admin') {
             document.getElementById('admin').style.display = ''
         }
         document.getElementById('name').innerHTML = user.name + ' ' + user.surname
@@ -256,41 +256,33 @@
 
     function success(pos, check) {
         var crd = pos.coords;
+        let workspace = '';
+        try {
+            getAuth(`${uri}/hr/timestamp/workspace?latitude=${crd.latitude}&longitude=${crd.longitude}`).then((res) => {
+                if (res.data.length > 0) {
+                    workspace = res.data[0].workspaceName
+                    postAuth(`${uri}/hr/timestamp`, {
+                        "timestampType": clockType,
+                        "isModify": false,
+                        "timestamp": Date.now() / 1000 | 0,
+                        "latitude": `${crd.latitude}`,
+                        "longitude": `${crd.longitude}`,
+                    }).then((res) => {
+                        let clock = 'Clock In'
+                        if (clockType === '2') clock = 'Clock Out'
+                        alert(`Success . . . Your ${clock} add ${workspace}`)
+                        location.reload()
+                    })
+                } else {
+                    let clock = 'Clock In'
+                    if (clockType === '2') clock = 'Clock Out'
+                    alert(`Error Can't ${clock} Because your out of location`)
+                }
+            })
+        } catch (error) {
+            alert(error)
+        }
 
-        console.log('Your current position is:');
-        console.log(`Latitude : ${crd.latitude}`);
-        console.log(`Longitude: ${crd.longitude}`);
-        console.log(`More or less ${crd.accuracy} meters.`);
-        // if (calcCrow(lat, long, crd.latitude, crd.longitude) <= 50) alert(`Success`)
-        // else alert(`fail`)
-        // if (clockType === 'in') {
-        //     clockIn.push({
-        //         latitude: crd.latitude,
-        //         longitude: crd.longitude
-        //     })
-
-        //     localStorage.setItem('clockIn', JSON.stringify(clockIn))
-        // } else {
-        //     clockOut.push({
-        //         latitude: crd.latitude,
-        //         longitude: crd.longitude
-        //     })
-        //     localStorage.setItem('clockOut', JSON.stringify(clockOut))
-        // }
-
-        console.log(crd)
-        console.log(new Date().toTimeString())
-
-        postAuth(`${uri}/hr/timestamp`, {
-            "timestampType": clockType,
-            "isModify": false,
-            "timestamp": Date.now() / 1000 | 0,
-            "latitude": `${crd.latitude}`,
-            "longitude": `${crd.longitude}`,
-        }).then((res) => {
-            alert(`Success . . .`)
-            location.reload()
-        })
 
 
         // location.reload();
