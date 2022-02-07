@@ -57,7 +57,7 @@
 <script>
     const urlSearchParams = new URLSearchParams(window.location.search);
     const params = Object.fromEntries(urlSearchParams.entries());
-    const uri = 'https://datawarehouse.giize.com'
+    const uri = 'https://whr.giize.com/api/auth'
     async function getHistory(id) {
         getAuth(`${uri}/user/verify/device/${id}`).then(({ data }) => {
             console.log({ data })

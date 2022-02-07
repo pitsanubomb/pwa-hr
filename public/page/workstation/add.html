@@ -61,13 +61,13 @@
 
     const form = document.getElementById("form");
     form.onsubmit = submit;
-    const uri = 'https://datawarehouse.giize.com/hr'
+    const uri = 'https://whr.giize.com/api/hr'
     function submit(e) {
         e.preventDefault();
         console.log(e)
         postAuth(`${uri}/workspace`, {
             "workspaceName": e.target[0].value,
-            "latitude": parseFloat(e.target[2].value),
+            "latitude": parseFloat(e.target[1].value),
             "longitude": parseFloat(e.target[2].value),
             "radius": e.target[3].value
         }).then((data) => {

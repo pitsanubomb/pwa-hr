@@ -228,7 +228,7 @@
 <script src="../src/app.js"></script>
 <script src="../src/fetch.js"></script>
 <script>
-    const uri = 'https://datawarehouse.giize.com'
+    const uri = 'https://whr.giize.com/api/auth'
     async function getMe() {
         const { data } = await getAuth(`${uri}/auth/me`)
         const { user } = data

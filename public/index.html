@@ -384,7 +384,7 @@
             password: event.target[1].value,
         });
 
-        fetch("https://datawarehouse.giize.com/auth/login", {
+        fetch("https://whr.giize.com/api/auth/auth/login", {
             method: "POST",
             headers: myHeaders,
             body: raw,
@@ -409,7 +409,7 @@
                             "Authorization",
                             "Bearer " + result.data.authToken
                         );
-                        fetch("https://datawarehouse.giize.com/auth/me", {
+                        fetch("https://whr.giize.com/api/auth/auth/me", {
                             method: "GET",
                             headers: authHeader,
                         }).then((response) => response.json().then(({ data }) => {
@@ -419,7 +419,7 @@
                             if (localStorage.getItem(user.uid)) {
                                 authHeader.append("DeviceId", localStorage.getItem(user.uid));
 
-                                fetch("https://datawarehouse.giize.com/auth/login/device", {
+                                fetch("https://whr.giize.com/api/auth/auth/login/device", {
                                     method: "POST",
                                     headers: authHeader,
                                 })
@@ -465,7 +465,7 @@
                                     "Bearer " + result.data.authToken
                                 );
 
-                                fetch("https://datawarehouse.giize.com/user/create/verify/device", {
+                                fetch("https://whr.giize.com/api/auth/user/create/verify/device", {
                                     method: 'POST',
                                     headers: header,
                                     body: crateVerifyBody

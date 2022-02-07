@@ -85,7 +85,7 @@
             "surname": event.target[3].value,
         });
         console.log(raw);
-        fetch("https://datawarehouse.giize.com/user", {
+        fetch("https://whr.giize.com/api/auth/user", {
             method: 'POST',
             headers: myHeaders,
             body: raw,
