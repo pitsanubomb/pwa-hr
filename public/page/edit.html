@@ -29,12 +29,12 @@
 
                     <div class="form-group col-lg-12">
                         <label>Email</label>
-                        <input type="" name="username" class="form-control" id="username" value="">
+                        <input type="" readonly name="username" class="form-control" id="username" value="">
                     </div>
 
                     <div class="form-group col-lg-12">
                         <label>Password</label>
-                        <input type="password" name="password" class="form-control" id="password" value="">
+                        <input type="password" readonly name="password" class="form-control" id="password" value="">
                     </div>
 
                     <div class="form-group col-lg-12">
@@ -47,7 +47,7 @@
                         <input type="" name="surname" class="form-control" id="surname" value="">
                     </div>
             </div>
-            <button type="submit" class="btn btn-primary mt-2">Register</button>
+            <button type="submit" class="btn btn-primary mt-2">Edit</button>
         </div>
         </form>
 </div>
@@ -59,40 +59,28 @@
 </body>
 
 </html>
+<script src="../src/fetch.js"></script>
 <script>
-    if (localStorage.getItem('isLogin') === 'true') {
-        window.location.href = 'page/main.html'
-    }
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+    const uri = `https://whr.giize.com/api/auth/user/${params.uid}`
+    getAuth(`${uri}`).then(({ data }) => {
+        document.getElementById('username').value = data.email;
+        document.getElementById('password').value = data.password;
+        document.getElementById('name').value = data.name;
+        document.getElementById('surname').value = data.surname;
+    })
+
     const form = document.getElementById('form');
 
     form.onsubmit = submit;
     function submit(event) {
         event.preventDefault();
-        console.log(event.target[0])
-
-        var myHeaders = new Headers();
-        myHeaders.append("Content-Type", "application/json");
-
-        var raw = JSON.stringify({
-            "email": event.target[0].value,
-            "password": event.target[1].value,
-            "name": event.target[2].value,
-            "surname": event.target[3].value,
-        });
-        console.log(raw);
-        fetch("https://whr.giize.com/api/auth/user", {
-            method: 'POST',
-            headers: myHeaders,
-            body: raw,
-            redirect: 'follow'
-        }).then((res) => res.json()).then((data) => {
-            console.log(data)
-            if (data.statusCode !== 500) {
-                alert(`Register Success`)
-                window.location.href = '/'
-            } else {
-                alert(`Fail`)
-            }
-        })
+        const name = document.getElementById('name').value
+        const surname = document.getElementById('surname').value
+        putAuth(`${uri}`, { name: name, surname: surname }).then((data) => { if (data.statusCode === 200){
+            alert('Update Success')
+            window.location.href ='/page/user.html'
+        } })
     }
 </script>

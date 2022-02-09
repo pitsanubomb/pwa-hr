@@ -44,19 +44,11 @@
             <div class="col-md-auto">
                 <table id="example" class="display" width="100%"></table>
             </div>
-            <!-- <div class="col">
-                Column
-            </div>
-            <div class="col">
-                Column
-            </div>
-        </div> -->
         </div>
 </body>
 <script src="../src/fetch.js"></script>
 <script>
     const uri = 'https://whr.giize.com/api/auth'
-    // const localUri = 'http://localhost.com:3000'
     async function getUser() {
         // const { user } = await getAuth(`${uri}/auth/me`)
         // console.log(user)
@@ -89,24 +81,33 @@
                     title: 'Verify',
                     data: 'isVerify'
                 }, {
+                    data: 'uid',
+                    render: function (data, type, row) {
+                        const uid = data
+                        return `<button type="button" value='${uid}' onclick="updateUser(this)" class="btn btn-info">Edit</button>`;
+                    }
+                }, {
+                    data: 'uid',
+                    render: function (data, type, row) {
+                        const uid = data
+                        return `<button type="button" value='${uid}' onclick="delUser(this)" class="btn btn-info">Del</button>`;
+                    }
+                }, {
                     data: 'email',
                     render: function (data, type, row) {
                         const email = data
-                        const test = 'ss'
                         return `<button type="button" value='${email}' onclick="sendMail(this)" class="btn btn-info">Sendmail</button>`;
                     }
                 }, {
                     data: 'uid',
                     render: function (data, type, row) {
                         const uid = data
-                        const test = 'ss'
                         return `<button type="button" value='${uid}' onclick="getHistory(this)" class="btn btn-info">History</button>`;
                     }
-                },{
+                }, {
                     data: 'uid',
                     render: function (data, type, row) {
                         const uid = data
-                        const test = 'ss'
                         return `<button type="button" value='${uid}' onclick="verifyDevice(this)" class="btn btn-info">Verify Device</button>`;
                     }
                 }]
@@ -128,6 +129,23 @@
     function getHistory({ value }) {
         console.log(value)
         window.location.href = `userhistory.html?uid=${value}`;
+    }
+
+
+    function updateUser({ value }) {
+        console.log(value)
+        window.location.href = `edit.html?uid=${value}`;
+    }
+
+    function delUser({ value }) {
+        if (value !== '4b6d0346-4496-42d3-8a56-859d214690fb') {
+            delAuth(`${uri}/user/${value}`).then((data) => {
+                if (data.statusCode === 200) {
+                    alert('Delete successful')
+                    location.reload();
+                }
+            })
+        }
     }
 
     function verifyDevice({ value }) {
