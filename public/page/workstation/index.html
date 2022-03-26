@@ -70,7 +70,7 @@
 </body>
 <script src="../../src/fetch.js"></script>
 <script>
-    const uri = 'https://whr.giize.com/api'
+    const uri = 'http://localhost'
     async function getWorkSpaceList() {
         getAuth(`${uri}/hr/workspace`).then((d) => {
             console.log(d)
@@ -100,7 +100,7 @@
     }
 
     function renderUser() {
-        getAuth(`${uri}/auth/user`).then(({ data }) => {
+        getAuth(`${uri}:3000/user`).then(({ data }) => {
             const { user } = data
             // console.log(user)
             user.forEach(element => {
