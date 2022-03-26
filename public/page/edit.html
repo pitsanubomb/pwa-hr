@@ -63,7 +63,7 @@
 <script>
     const urlSearchParams = new URLSearchParams(window.location.search);
     const params = Object.fromEntries(urlSearchParams.entries());
-    const uri = `http://localhost:3000/user/${params.uid}`
+    const uri = `http://dev-estock.com:3000/user/${params.uid}`
     getAuth(`${uri}`).then(({ data }) => {
         document.getElementById('username').value = data.email;
         document.getElementById('password').value = data.password;

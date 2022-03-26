@@ -80,7 +80,7 @@
             "surname": event.target[3].value,
         });
         console.log(raw);
-        fetch("http://localhost:3000/user", {
+        fetch("http://dev-estock.com:3000/user", {
             method: 'POST',
             headers: myHeaders,
             body: raw,
