@@ -80,7 +80,7 @@
             "surname": event.target[3].value,
         });
         console.log(raw);
-        fetch("http://dev-estock.com:3000/user", {
+        fetch("https://dev-estock.com/api/auth/user", {
             method: 'POST',
             headers: myHeaders,
             body: raw,
