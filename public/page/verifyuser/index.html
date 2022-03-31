@@ -24,6 +24,7 @@
         src="https://cdn.datatables.net/1.11.3/js/jquery.dataTables.min.js"></script>
     <script type="text/javascript" charset="utf8"
         src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>PWA</title>
 </head>
 
@@ -38,19 +39,15 @@
         <li class="nav-item">
             <a class="nav-link" aria-current="user" href="../../page/user.html">User</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="workspace" href="../../page/workstation/">Workspace</a>
+        </li>
     </ul>
     <div class="container">
         <div class="row justify-content-md-center">
             <div class="col-md-auto">
                 <table id="example" class="display" width="100%"></table>
             </div>
-            <!-- <div class="col">
-                Column
-            </div>
-            <div class="col">
-                Column
-            </div>
-        </div> -->
         </div>
 </body>
 <script src="../../src/fetch.js"></script>
@@ -76,6 +73,9 @@
                         render: function (data, type) {
                             if (type === 'display') {
                                 switch (data) {
+                                    case 0:
+                                        data = '<span style="color:green">Undefine</span>'
+                                        break;
                                     case 1:
                                         data = '<span style="color:green">Mobile</span>'
                                         break;
@@ -97,36 +97,81 @@
                         }
                     },
                     {
-                        title: 'Device details', data: 'deviceDetails'
+                        title: 'Allowed', data: 'isVerify',
                     },
                     {
                         data: 'deviceId',
                         render: function (data, type, row) {
                             const uid = data
-                            const test = 'ss'
-                            return `<button type="button" value='${uid}' onclick="verifyDevice(this)" class="btn btn-info">Verify</button>`;
+                            return `<button type="button" value='${uid}' onclick="verifyDevice(this)" class="btn btn-info">Allow</button>`;
                         }
                     },
+                    {
+                        data: 'deviceId',
+                        render: function (data, type, row) {
+                            const uid = data
+                            return `<button type="button" value='${uid}' onclick="unVerifyDevice(this)" class="btn btn-info">UnAllow</button>`;
+                        }
+                    },
+                    {
+                        data: 'deviceId',
+                        render: function (data, type, row) {
+                            const uid = data
+                            return `<button type="button" value='${uid}' onclick="removeDevice(this)" class="btn btn-info">Remove device</button>`;
+                        }
+                    }
                 ]
             });
         })
     }
 
     function verifyDevice({ value }) {
-        pathAuth(`${uri}/user/verify/device/${value}`).then((data) => alert(data.data.message));
-        // var myHeaders = new Headers();
-        // myHeaders.append("Authorization", localStorage.getItem("auth"));
+        Swal.fire({
+            title: 'Do you want to Allowed this device?',
+            showDenyButton: true,
+            confirmButtonText: 'Ok',
+            denyButtonText: `Cancel`,
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                pathAuth(`${uri}/user/verify/device/${value}`).then(() => window.location.reload());
+            } else if (result.isDenied) {
+                Swal.fire('Cancel', '', 'info')
+            }
+        })
 
-        // var requestOptions = {
-        //     method: 'PATCH',
-        //     headers: myHeaders,
-        //     redirect: 'follow'
-        // };
+    }
 
-        // fetch("https://datawarehouse.giize.com/user/verify/device/25f194f9-166a-405e-a35a-3370e151e9fa", requestOptions)
-        //     .then(response => response.text())
-        //     .then(result => console.log(result))
-        //     .catch(error => console.log('error', error));
+    function unVerifyDevice({ value }) {
+        Swal.fire({
+            title: 'Do you want to Un Allowed this device?',
+            showDenyButton: true,
+            confirmButtonText: 'Ok',
+            denyButtonText: `Cancel`,
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                pathAuth(`${uri}/user/unverrify/device/${value}`).then(() => window.location.reload());
+            } else if (result.isDenied) {
+                Swal.fire('Cancel', '', 'info')
+            }
+        })
+    }
+
+    function removeDevice({ value }) {
+        Swal.fire({
+            title: 'Do you want to Remove this device?',
+            showDenyButton: true,
+            confirmButtonText: 'Ok',
+            denyButtonText: `Cancel`,
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                delAuth(`${uri}/user/device/${value}`).then(() => window.location.reload());
+            } else if (result.isDenied) {
+                Swal.fire('Cancel', '', 'info')
+            }
+        })
     }
 
     console.log(params.uid)

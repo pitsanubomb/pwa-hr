@@ -44,20 +44,13 @@
             <div class="col-md-auto">
                 <table id="example" class="display" width="100%"></table>
             </div>
-            <!-- <div class="col">
-                Column
-            </div>
-            <div class="col">
-                Column
-            </div>
-        </div> -->
         </div>
 </body>
 <script src="../src/fetch.js"></script>
 <script>
     const urlSearchParams = new URLSearchParams(window.location.search);
     const params = Object.fromEntries(urlSearchParams.entries());
-    const uri = 'https://whr.giize.com/api'
+    const uri = 'https://dev-estock.com/api'
     async function getHistory(id) {
         getAuth(`${uri}/hr/timestamp/user/${id}`).then(({data}) => {
             console.log({data})

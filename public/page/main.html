@@ -189,6 +189,9 @@
         <li class="nav-item">
             <a class="nav-link" aria-current="user" href="../page/user.html">User</a>
         </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="workspace" href="../page/workstation/">Workspace</a>
+        </li>
     </ul>
     <div class="card">
         <div class="box">
@@ -228,12 +231,13 @@
 <script src="../src/app.js"></script>
 <script src="../src/fetch.js"></script>
 <script>
-    const uri = 'https://whr.giize.com/api'
+    const uri = 'https://dev-estock.com/api'
     async function getMe() {
         const { data } = await getAuth(`${uri}/auth/auth/me`)
         const { user } = data
-        console.log(user)
-        if (user.name === 'Admin') {
+        localStorage.setItem('uid', user.uid)
+
+        if (user.email === 'test@wrp.com') {
             document.getElementById('admin').style.display = ''
         }
         document.getElementById('name').innerHTML = user.name + ' ' + user.surname
@@ -254,10 +258,19 @@
         maximumAge: 0
     };
 
-    function success(pos, check) {
+    async function success(pos, check) {
         var crd = pos.coords;
         let workspace = '';
         try {
+            if (!localStorage.getItem("isVerifiedToken")) window.location.href = `verify.html`;
+            try {
+                const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem("uid"))
+                if (verifyDevice.statusCode === 500) window.location.href = `verify.html`;
+            } catch (error) {
+                alert(error)
+                alert('Please Verify Device')
+                window.location.href = `verify.html`;
+            }
             getAuth(`${uri}/hr/timestamp/workspace?latitude=${crd.latitude}&longitude=${crd.longitude}`).then((res) => {
                 if (res.data.length > 0) {
                     workspace = res.data[0].workspaceName
@@ -277,6 +290,7 @@
                     let clock = 'Clock In'
                     if (clockType === '2') clock = 'Clock Out'
                     alert(`Error Can't ${clock} Because your out of location`)
+                    location.reload()
                 }
             })
         } catch (error) {
@@ -300,6 +314,11 @@
 
 
     function clock(event) {
+        if (!localStorage.getItem("isVerifiedToken")) window.location.href = `verify.html`;
+        postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem('uid')).then((res) => {
+            if (res.statusCode === 401) window.location.href = `verify.html`;
+        })
+
         clockType = event
         document.getElementById('load').style.display = 'block';
         // hide the lorem ipsum text

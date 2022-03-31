@@ -100,7 +100,7 @@
     }
 
     function renderUser() {
-        getAuth(`${uri}:3000/user`).then(({ data }) => {
+        getAuth(`${uri}/auth/user`).then(({ data }) => {
             const { user } = data
             // console.log(user)
             user.forEach(element => {

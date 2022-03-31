@@ -398,93 +398,10 @@
                     console.log(result.message);
                 } else {
                     console.log(result.data);
-                    if (event.target[0].value === "test@wrp.com") {
-                        localStorage.setItem("auth", "Bearer " + result.data.authToken);
-                        localStorage.setItem("isLogin", true);
-                        window.location.href = "page/main.html";
-                    } else {
-                        var authHeader = new Headers();
-                        authHeader.append("Content-Type", "application/json");
-                        authHeader.append(
-                            "Authorization",
-                            "Bearer " + result.data.authToken
-                        );
-                        fetch("https://dev-estock.com/api/auth/auth/me", {
-                            method: "GET",
-                            headers: authHeader,
-                        }).then((response) => response.json().then(({ data }) => {
-                            const { user } = data
-                            console.log(user.uid)
-                            console.log(localStorage.getItem(user.uid))
-                            if (localStorage.getItem(user.uid)) {
-                                authHeader.append("DeviceId", localStorage.getItem(user.uid));
-
-                                fetch("https://dev-estock.com/api/auth/auth/login/device", {
-                                    method: "POST",
-                                    headers: authHeader,
-                                })
-                                    .then((response) => response.json())
-                                    .then((result) => {
-                                        if (
-                                            result.statusCode === 401 ||
-                                            result.statusCode === 500
-                                        ) {
-                                            alert(result.message);
-                                            console.log(result.message);
-                                        } else {
-                                            localStorage.setItem(
-                                                "auth",
-                                                "Bearer " + result.data.authToken
-                                            );
-                                            localStorage.setItem("isLogin", true);
-                                            window.location.href = "page/main.html";
-                                        }
-                                    });
-                            } else {
-                                deviceType = 1;
-                                if (navigator.userAgentData.mobile !== true) {
-                                    if (navigator.userAgentData.platform === "Windows")
-                                        deviceType = 2;
-                                    else if (
-                                        navigator.userAgentData.platform === "Macintosh" ||
-                                        navigator.userAgent.platform === "MacIntel"
-                                    )
-                                        deviceType = 3;
-                                    else deviceType = 0;
-                                }
-                                var crateVerifyBody = JSON.stringify({
-                                    deviceType: deviceType,
-                                    deviceDetails: JSON.stringify(navigator.userAgentData),
-                                    isPined: false,
-                                    isRequireSecret: false,
-                                });
-                                var header = new Headers();
-                                header.append("Content-Type", "application/json");
-                                header.append(
-                                    "Authorization",
-                                    "Bearer " + result.data.authToken
-                                );
-
-                                fetch("https://dev-estock.com/api/auth/user/create/verify/device", {
-                                    method: 'POST',
-                                    headers: header,
-                                    body: crateVerifyBody
-                                }).then(response => response.json()).then(result => {
-                                    if (result.statusCode === 401 || result.statusCode === 500) {
-                                        alert(result.message)
-                                        console.log(result.message);
-                                    } else {
-                                        console.log(result.data);
-                                        localStorage.setItem(`${result.data.user.uid}`, `${result.data.deviceId}`)
-                                        // localStorage.setItem('deviceId', result.data.deviceId);
-                                        // localStorage.setItem('isDevice', true);
-                                        alert(`Your device id is ${result.data.deviceId} Please tell to Admin verify your device`);
-                                    }
-                                })
-                            }
-
-                        }));
-                    }
+                    localStorage.setItem("auth", "Bearer " + result.data.authToken);
+                    localStorage.setItem("isLogin", true);
+                    window.location.href = "page/main.html";
+                    
                 }
             }
             )

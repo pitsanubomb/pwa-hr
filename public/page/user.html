@@ -24,6 +24,7 @@
     </script>
     <script type="text/javascript" charset="utf8"
         src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>PWA</title>
 </head>
 
@@ -37,6 +38,9 @@
         </li>
         <li class="nav-item">
             <a class="nav-link" aria-current="user" href="../page/user.html">User</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="workspace" href="../page/workstation/">Workspace</a>
         </li>
     </ul>
     <div class="container">
@@ -90,13 +94,7 @@
                     data: 'uid',
                     render: function (data, type, row) {
                         const uid = data
-                        return `<button type="button" value='${uid}' onclick="delUser(this)" class="btn btn-info">Del</button>`;
-                    }
-                }, {
-                    data: 'email',
-                    render: function (data, type, row) {
-                        const email = data
-                        return `<button type="button" value='${email}' onclick="sendMail(this)" class="btn btn-info">Sendmail</button>`;
+                        return `<button type="button" value='${uid}' onclick="delUser(this)" class="btn btn-info">Delete</button>`;
                     }
                 }, {
                     data: 'uid',
@@ -116,16 +114,6 @@
     }
 
     getUser()
-
-    function sendMail({ value }) {
-        postAuth(`${uri}/user/sendmail`, {
-            "email": value
-        }).then((data) => {
-            // console.log(data)
-            alert(data.data.message)
-        })
-    }
-
     function getHistory({ value }) {
         console.log(value)
         window.location.href = `userhistory.html?uid=${value}`;
@@ -138,13 +126,26 @@
     }
 
     function delUser({ value }) {
-        if (value !== '4b6d0346-4496-42d3-8a56-859d214690fb') {
-            delAuth(`${uri}/user/${value}`).then((data) => {
-                if (data.statusCode === 200) {
-                    alert('Delete successful')
-                    location.reload();
+        if (value !== 'f84e2868-b304-40e6-b895-afe92c77689f') {
+            Swal.fire({
+                title: 'Do you want to delete this user?',
+                showDenyButton: true,
+                confirmButtonText: 'Ok',
+                denyButtonText: `Cancel`,
+            }).then((result) => {
+                /* Read more about isConfirmed, isDenied below */
+                if (result.isConfirmed) {
+                    delAuth(`${uri}/user/${value}`).then((data) => {
+                        if (data.statusCode === 200) {
+                            location.reload();
+                        }
+                    })
+                } else if (result.isDenied) {
+                    Swal.fire('Not delete', '', 'info')
                 }
             })
+        } else {
+            Swal.fire('Can not delete default admin', '', 'info')
         }
     }
 
