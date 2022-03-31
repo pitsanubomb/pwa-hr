@@ -19,14 +19,6 @@
     <meta name="apple-mobile-web-app-status-bar" content="#FFE1C4">
     <meta name="theme-color" content="#FFE1C4">
 
-
-    <!-- Map Leaf Left JS -->
-    <!-- <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-        integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-        crossorigin="" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-        integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-        crossorigin=""></script> -->
     <title>PWA</title>
 </head>
 <style>
@@ -36,7 +28,24 @@
 </style>
 
 <body>
-    <div class="container">
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="../../page/main.html">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="s" href="../../page/history.html">History</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="user" href="../../page/user.html">User</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="workspace" href="/../page/workstation/">Workspace</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="addworkspace" href="/../page/workstation/add.html">Add Workspace</a>
+        </li>
+    </ul>
+    <div class="container" style="margin-top: 2%">
         <form id="form">
             Workspace Name
             <input type="text" value="" id="workspace">
@@ -117,7 +126,7 @@
 
         const $center = new google.maps.LatLng(lat, long);
         const mapOptions = { zoom: 15, center: $center }
-        map = new google.maps.Map(document.getElementById("map"),mapOptions);
+        map = new google.maps.Map(document.getElementById("map"), mapOptions);
 
         map.addListener("click", (e) => {
             console.log(e.latLng.toJSON())
@@ -168,7 +177,7 @@
             fillColor: "#FF0000",
             fillOpacity: 0.35,
             map,
-            center:$center,
+            center: $center,
             radius: parseInt(document.getElementById('radius').value),
         });
     }

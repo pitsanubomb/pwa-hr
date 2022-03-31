@@ -13,7 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
         integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
         crossorigin="anonymous"></script>
-    <link rel="manifest" href="mainfest.json">
+    <link rel="manifest" href="./mainfest.json">
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- ios support -->
     <link rel="apple-touch-icon" href="/img/icons/icon-96x96.png">
     <meta name="apple-mobile-web-app-status-bar" content="#FFE1C4">
@@ -193,6 +194,14 @@
             <a class="nav-link" aria-current="workspace" href="../page/workstation/">Workspace</a>
         </li>
     </ul>
+    <ul class="nav" id="client">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="../page/main.html">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="history" href="../page/history.html">History</a>
+        </li>
+    </ul>
     <div class="card">
         <div class="box">
             <div class="img">
@@ -239,6 +248,7 @@
 
         if (user.email === 'test@wrp.com') {
             document.getElementById('admin').style.display = ''
+            document.getElementById('client').style.display = 'none'
         }
         document.getElementById('name').innerHTML = user.name + ' ' + user.surname
     }
@@ -267,8 +277,7 @@
                 const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem("uid"))
                 if (verifyDevice.statusCode === 500) window.location.href = `verify.html`;
             } catch (error) {
-                alert(error)
-                alert('Please Verify Device')
+                Swal.fire('Please verify your device', '', 'info')
                 window.location.href = `verify.html`;
             }
             getAuth(`${uri}/hr/timestamp/workspace?latitude=${crd.latitude}&longitude=${crd.longitude}`).then((res) => {
@@ -283,13 +292,15 @@
                     }).then((res) => {
                         let clock = 'Clock In'
                         if (clockType === '2') clock = 'Clock Out'
-                        alert(`Success . . . Your ${clock} add ${workspace}`)
+                        Swal.fire(`Success You ${clock} add ${workspace}`, '', 'success')
+                        // alert(`Success . . . Your ${clock} add ${workspace}`)
                         location.reload()
                     })
                 } else {
                     let clock = 'Clock In'
                     if (clockType === '2') clock = 'Clock Out'
-                    alert(`Error Can't ${clock} Because your out of location`)
+                    Swal.fire(`Error Can't ${clock} Because your out of location`, '', 'error')
+                    // alert(`Error Can't ${clock} Because your out of location`)
                     location.reload()
                 }
             })
