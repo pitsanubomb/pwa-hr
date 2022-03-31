@@ -82,7 +82,7 @@
         }).then((data) => {
             // console.log(data)
             if (data.statusCode === 201) {
-                alert("Add data success")
+                Swal.fire(`Add data completed successfully`, '', 'success')
             }
             // alert(data.data)
         })
