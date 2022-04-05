@@ -24,6 +24,7 @@
     </script>
     <script type="text/javascript" charset="utf8"
         src="https://cdn.datatables.net/1.11.3/js/dataTables.bootstrap5.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>PWA</title>
 </head>
 
@@ -107,7 +108,15 @@
                         const id = data
                         return `<button type="button" value='${id}' onclick="editLocation(this)" class="btn btn-primary">Edit</button>`;
                     }
-                },]
+                },
+                // {
+                //     data: 'id',
+                //     render: function (data, type, row) {
+                //         const id = data
+                //         return `<button type="button" value='${id}' onclick="removeLocation(this)" class="btn btn-danger">Delete</button>`;
+                //     }
+                // }
+            ]
             })
         })
     }
@@ -139,6 +148,26 @@
         window.location.href = `edit.html?id=${value}`
     }
 
+    function removeLocation({ value }) {
+        Swal.fire({
+            title: 'Do you want to delete this location?',
+            showDenyButton: true,
+            confirmButtonText: 'Ok',
+            denyButtonText: `Cancel`,
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                delAuth(`${uri}/hr/workspace/${value}`).then((data) => {
+                    if (data.statusCode === 200) {
+                        location.reload();
+                    }
+                })
+            } else if (result.isDenied) {
+                Swal.fire('Not delete', '', 'info')
+            }
+        })
+    }
+
     function save() {
         postAuth(`${uri}/hr/workspace/user`, {
             "employee": document.getElementById('user').value,
@@ -157,25 +186,6 @@
         })
     }
 
-
-    // function sendMail({ value }) {
-    //     postAuth(`${uri}/user/sendmail`, {
-    //         "email": value
-    //     }).then((data) => {
-    //         // console.log(data)
-    //         alert(data.data.message)
-    //     })
-    // }
-
-    // function getHistory({ value }) {
-    //     console.log(value)
-    //     window.location.href = `userhistory.html?uid=${value}`;
-    // }
-
-    // function verifyDevice({ value }) {
-    //     console.log(value)
-    //     window.location.href = `verifyuser?uid=${value}`;
-    // }
 </script>
 
 </html>
