@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.10.2/dist/umd/popper.min.js"
+        integrity="sha384-7+zCNj/IqJ95wo16oMtfsKbZ9ccEh31eOz1HGyDuCQ6wgnyJNSYdrPa03rtR1zdB"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"
+        integrity="sha384-QJHtvGhmr9XOIpI6YVutG+2QOK9T+ZnN4kzFN1RtK3zEFEIsxhlmWl5/YESvpZ13"
+        crossorigin="anonymous"></script>
+    <link rel="manifest" href="mainfest.json">
+    <!-- ios support -->
+    <link rel="apple-touch-icon" href="/img/icons/icon-96x96.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#FFE1C4">
+    <meta name="theme-color" content="#FFE1C4">
+
+    <title>PWA</title>
+</head>
+<style>
+    #map {
+        height: 500px;
+    }
+</style>
+
+<body>
+    <ul class="nav">
+        <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="../../page/main.html">Home</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="s" href="../../page/history.html">History</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="user" href="../../page/user.html">User</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="workspace" href="/../page/workstation/">Workspace</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" aria-current="addworkspace" href="/../page/workstation/add.html">Add Workspace</a>
+        </li>
+    </ul>
+    <div class="container" style="margin-top: 2%">
+        <form id="form">
+            Workspace Name
+            <input type="text" value="" id="workspace">
+            latitude
+            <input type="text" value="" id="latitude">
+            longitude
+            <input type="text" value="" id="longitude">
+            <input type="range" id="radius" name="radius" min="0" max="5000" value=200>
+            <input type="number" value=200 id="rv"> meters
+            <input type="submit">
+        </form>
+        <div id="map"></div>
+    </div>
+</body>
+<script src="../../src/fetch.js"></script>
+<!-- Async script executes immediately and must be after any DOM elements used in callback. -->
+<script
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAKwLIazdyTKcdPnSesICrKqPU6azFA3Ms&callback=initMap&v=weekly"
+    async></script>
+<script>
+    let map;
+
+    const form = document.getElementById("form");
+    form.onsubmit = submit;
+    const uri = 'https://dev-estock.com/api/hr'
+    const urlSearchParams = new URLSearchParams(window.location.search);
+    const params = Object.fromEntries(urlSearchParams.entries());
+
+    function submit(e) {
+        e.preventDefault();
+        console.log(e)
+        putAuth(`${uri}/workspace/${params.id}`, {
+            "workspaceName": e.target[0].value,
+            "latitude": parseFloat(e.target[1].value),
+            "longitude": parseFloat(e.target[2].value),
+            "radius": e.target[3].value
+        }).then((data) => {
+            // console.log(data)
+            if (data.statusCode === 204) {
+                Swal.fire(`Edit data completed successfully`, '', 'success')
+            }
+            // alert(data.data)
+        })
+    }
+
+
+    getLocation()
+
+    async function getLocation() {
+        const { data } = await getAuth(`${uri}/workspace/${params.id}`)
+        console.log(data)
+        document.getElementById('radius').value = parseFloat(data.radius)
+        document.getElementById('rv').value = parseFloat(data.radius)
+        document.getElementById('workspace').value = data.workspaceName
+        initMap(data.latitude, data.longitude)
+    }
+
+
+    function initMap(lat, long) {
+
+        document.getElementById('latitude').value = lat;
+        document.getElementById('longitude').value = long;
+
+        const $center = new google.maps.LatLng(lat, long);
+        const mapOptions = { zoom: 15, center: $center }
+        map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+        map.addListener("click", (e) => {
+            console.log(e.latLng.toJSON())
+            document.getElementById('latitude').value = e.latLng.toJSON().lat;
+            document.getElementById('longitude').value = e.latLng.toJSON().lng;
+            placeMarkerAndPanTo(e.latLng, map, parseInt(document.getElementById('radius').value));
+        });
+
+        document.getElementById('latitude').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('radius').value))
+        })
+
+
+        document.getElementById('longitude').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('radius').value))
+        })
+
+        document.getElementById('radius').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('radius').value))
+            document.getElementById('rv').value = parseInt(document.getElementById('radius').value)
+        })
+
+
+        document.getElementById('rv').addEventListener('input', () => {
+
+            const myLatLng = { lat: parseFloat(document.getElementById('latitude').value), lng: parseFloat(document.getElementById('longitude').value) };
+            placeMarkerAndPanTo(myLatLng, map, parseInt(document.getElementById('rv').value))
+            document.getElementById('radius').value = parseInt(document.getElementById('rv').value)
+        })
+
+        marker = new google.maps.Marker({
+            // The below line is equivalent to writing:
+            // position: new google.maps.LatLng(-34.397, 150.644)
+            position: $center,
+            map: map,
+        });
+
+        radiusMap = new google.maps.Circle({
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#FF0000",
+            fillOpacity: 0.35,
+            map,
+            center: $center,
+            radius: parseInt(document.getElementById('radius').value),
+        });
+    }
+
+
+
+    function placeMarkerAndPanTo(latLng, map, r) {
+        radiusMap.setMap(null);
+        marker.setMap(null);
+        marker = new google.maps.Marker({
+            position: latLng,
+            map: map,
+        });
+        map.panTo(latLng);
+
+        radiusMap = new google.maps.Circle({
+            strokeColor: "#FF0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#FF0000",
+            fillOpacity: 0.35,
+            map,
+            center: latLng,
+            radius: r,
+        });
+    }
+</script>
+
+</html>

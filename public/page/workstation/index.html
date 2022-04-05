@@ -100,6 +100,13 @@
                         const id = data
                         return `<button type="button" value='${id}' onclick="addUser(this)" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal">Add user to place</button>`;
                     }
+                },
+                {
+                    data: 'id',
+                    render: function (data, type, row) {
+                        const id = data
+                        return `<button type="button" value='${id}' onclick="editLocation(this)" class="btn btn-primary">Edit</button>`;
+                    }
                 },]
             })
         })
@@ -126,6 +133,10 @@
 
     function addUser({ value }) {
         workspace = value
+    }
+
+    function editLocation({ value }) {
+        window.location.href = `edit.html?id=${value}`
     }
 
     function save() {
