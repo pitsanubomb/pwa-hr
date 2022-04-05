@@ -219,7 +219,10 @@
                 <button type="button" class="btn btn-danger" onclick="allow()">Requst Allow</button>
             </span>
             <span id="stamp">
-                <ul>
+                <select id="timestamplocation" onchange="if (this.selectedIndex) showClock();">
+                    <option>Please select location</option>
+                </select>
+                <ul id="stampbutton" style="display: none;">
                     <li><button type="button" class="btn btn-primary" onclick="clock('1')">Clock In</button></li>
                     <li class="ml-2">
                         <button type="button" class="btn btn-danger" onclick="clock('2')">Clock
@@ -244,6 +247,42 @@
 <script src="../src/fetch.js"></script>
 <script>
     const uri = 'https://dev-estock.com/api'
+    let lat
+    let long
+
+    async function getLocationCanTimeStamp() {
+        navigator.geolocation.getCurrentPosition(onLocationAllow, notAllowloaction, {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        });
+    }
+
+    async function onLocationAllow(pos) {
+        const locate = crd = pos.coords;
+        console.log(locate)
+
+        lat = locate.latitude
+        long = locate.longitude
+        const { data } = await getAuth(`${uri}/hr/timestamp/workspace?latitude=${locate.latitude}&longitude=${locate.longitude}`)
+        const select = document.getElementById('timestamplocation')
+        data.forEach(locate => {
+            let option = document.createElement("option");
+            option.text = locate.workspaceName
+            option.value = locate.id
+            select.add(option)
+        });
+    }
+
+    async function notAllowloaction() {
+        Swal.fire('Please allow location', '', 'info')
+    }
+
+    async function showClock() {
+        document.getElementById('timestamplocation').style.display = 'none'
+        document.getElementById('stampbutton').style.display = ''
+    }
+
     async function getMe() {
         const { data } = await getAuth(`${uri}/auth/auth/me`)
         const { user } = data
@@ -258,7 +297,7 @@
         if (!localStorage.getItem("isVerifiedToken")) {
             document.getElementById('stamp').style.display = 'none'
             document.getElementById('allow').style.display = ''
-        }
+        } else await getLocationCanTimeStamp()
         try {
             const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem("uid"))
             if (verifyDevice.statusCode === 500) {
@@ -267,7 +306,6 @@
             }
         } catch (error) {
             Swal.fire('Have some thing error please tell Admin', '', 'info')
-            // window.location.href = `verify.html`;
         }
     }
 
@@ -278,13 +316,6 @@
     let clockType
     let clockIn = []
     let cloutOut = []
-
-
-    var options = {
-        enableHighAccuracy: true,
-        timeout: 5000,
-        maximumAge: 0
-    };
 
     async function allow() {
         const uid = localStorage.getItem('uid')
@@ -320,62 +351,31 @@
 
         }
         else {
-            deviceId = localStorage.getItem(`${user.uid}`)
-            Swal.fire({
-                title: 'You already to allow device id',
-                text: `Please tell Admin to allow device id ${deviceId}`,
-                icon: 'success',
-                confirmButtonText: 'Ok'
-            })
-
-        }
-        try {
-            const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, user.uid)
-        } catch (error) {
-
-        }
-
-    }
-
-    async function success(pos, check) {
-        var crd = pos.coords;
-        let workspace = '';
-        try {
-            getAuth(`${uri}/hr/timestamp/workspace?latitude=${crd.latitude}&longitude=${crd.longitude}`).then((res) => {
-                if (res.data.length > 0) {
-                    workspace = res.data[0].workspaceName
-                    postAuth(`${uri}/hr/timestamp`, {
-                        "timestampType": clockType,
-                        "isModify": false,
-                        "timestamp": Date.now() / 1000 | 0,
-                        "latitude": `${crd.latitude}`,
-                        "longitude": `${crd.longitude}`,
-                    }).then((res) => {
-                        let clock = 'Clock In'
-                        if (clockType === '2') clock = 'Clock Out'
-                        Swal.fire(`Success You ${clock} add ${workspace}`, '', 'success')
-                        // alert(`Success . . . Your ${clock} add ${workspace}`)
-                        location.reload()
+            deviceId = localStorage.getItem(uid)
+            try {
+                const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, deviceId)
+                if (verifyDevice.statusCode === 200) {
+                    Swal.fire({
+                        title: 'You already to allow device id',
+                        text: `Please tell Admin to allow device id ${deviceId}`,
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
                     })
                 } else {
-                    let clock = 'Clock In'
-                    if (clockType === '2') clock = 'Clock Out'
-                    Swal.fire(`Error Can't ${clock} Because your out of location`, '', 'error')
-                    // alert(`Error Can't ${clock} Because your out of location`)
-                    // location.reload()
+                    Swal.fire({
+                        title: 'You device is Ban',
+                        text: `Please contact admin becuase this device is ban`,
+                        icon: 'error',
+                        confirmButtonText: 'Ok'
+                    })
                 }
-            })
-        } catch (error) {
-            alert(error)
+
+            } catch (error) {
+
+            }
         }
 
 
-
-        // location.reload();
-    }
-
-    function error(err) {
-        console.warn(`ERROR(${err.code}): ${err.message}`);
     }
 
     function logout() {
@@ -388,13 +388,25 @@
     function clock(event) {
         clockType = event
         document.getElementById('load').style.display = 'block';
-        // hide the lorem ipsum text
         document.getElementById('stamp').style.display = 'none';
-        if (event === 'in') {
-            navigator.geolocation.getCurrentPosition(success, error, options);
-        } else {
-            navigator.geolocation.getCurrentPosition(success, error, options);
-        }
+        sendClock(clockType)
+    }
+
+    function sendClock(clockType) {
+        postAuth(`${uri}/hr/timestamp`, {
+            "timestampType": clockType,
+            "isModify": false,
+            "timestamp": Date.now() / 1000 | 0,
+            "latitude": `${crd.latitude}`,
+            "longitude": `${crd.longitude}`,
+        }).then((res) => {
+            let clock = 'Clock In'
+            if (clockType === '2') clock = 'Clock Out'
+            Swal.fire(`Success You ${clock}`, '', 'success')
+            document.getElementById('load').style.display = 'none'
+            document.getElementById('stamp').style.display = '';
+
+        })
     }
 
     function showTime() {
