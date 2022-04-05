@@ -215,6 +215,9 @@
                 <div></div>
                 <div></div>
             </div>
+            <span style="display: none;" id="allow">
+                <button type="button" class="btn btn-danger" onclick="allow()">Requst Allow</button>
+            </span>
             <span id="stamp">
                 <ul>
                     <li><button type="button" class="btn btn-primary" onclick="clock('1')">Clock In</button></li>
@@ -251,12 +254,27 @@
             document.getElementById('client').style.display = 'none'
         }
         document.getElementById('name').innerHTML = user.name + ' ' + user.surname
+
+        if (!localStorage.getItem("isVerifiedToken")) {
+            document.getElementById('stamp').style.display = 'none'
+            document.getElementById('allow').style.display = ''
+        }
+        try {
+            const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem("uid"))
+            if (verifyDevice.statusCode === 500) {
+                document.getElementById('stamp').style.display = 'none'
+                document.getElementById('allow').style.display = ''
+            }
+        } catch (error) {
+            Swal.fire('Have some thing error please tell Admin', '', 'info')
+            // window.location.href = `verify.html`;
+        }
     }
 
     getMe()
 
-    const lat = 13.7492727
-    const long = 100.5418493
+    // const lat = 13.7492727
+    // const long = 100.5418493
     let clockType
     let clockIn = []
     let cloutOut = []
@@ -268,18 +286,61 @@
         maximumAge: 0
     };
 
+    async function allow() {
+        const uid = localStorage.getItem('uid')
+        if (!localStorage.getItem("isVerifiedToken") || !localStorage.getItem(uid)) {
+            // Create Device Id
+            // if (navigator.userAgentData.mobile !== true) {
+            var crateVerifyBody = {
+                deviceType: 0,
+                deviceDetails: `Can't debug device`,
+                isPined: false,
+                isRequireSecret: false,
+            };
+
+
+
+            postAuth(`${uri}/auth/user/create/verify/device/`, crateVerifyBody).then((result) => {
+                if (result.statusCode === 401 || result.statusCode === 500) {
+                    alert(result.message);
+                    console.log(result.message);
+                } else {
+                    localStorage.setItem("isVerifiedToken", true)
+                    localStorage.setItem(`${result.data.user.uid}`, `${result.data.deviceId}`)
+                    // alert(`Please Tell Admin to allow device id ${result.data.deviceId}`)
+                    Swal.fire({
+                        title: 'Allow Device Complete!',
+                        text: `Please tell Admin to allow device id ${result.data.deviceId}`,
+                        icon: 'success',
+                        confirmButtonText: 'Ok'
+                    })
+
+                }
+            })
+
+        }
+        else {
+            deviceId = localStorage.getItem(`${user.uid}`)
+            Swal.fire({
+                title: 'You already to allow device id',
+                text: `Please tell Admin to allow device id ${deviceId}`,
+                icon: 'success',
+                confirmButtonText: 'Ok'
+            })
+
+        }
+        try {
+            const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, user.uid)
+        } catch (error) {
+
+        }
+
+    }
+
     async function success(pos, check) {
         var crd = pos.coords;
         let workspace = '';
         try {
-            if (!localStorage.getItem("isVerifiedToken")) window.location.href = `verify.html`;
-            try {
-                const verifyDevice = await postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem("uid"))
-                if (verifyDevice.statusCode === 500) window.location.href = `verify.html`;
-            } catch (error) {
-                Swal.fire('Please verify your device', '', 'info')
-                window.location.href = `verify.html`;
-            }
             getAuth(`${uri}/hr/timestamp/workspace?latitude=${crd.latitude}&longitude=${crd.longitude}`).then((res) => {
                 if (res.data.length > 0) {
                     workspace = res.data[0].workspaceName
@@ -301,7 +362,7 @@
                     if (clockType === '2') clock = 'Clock Out'
                     Swal.fire(`Error Can't ${clock} Because your out of location`, '', 'error')
                     // alert(`Error Can't ${clock} Because your out of location`)
-                    location.reload()
+                    // location.reload()
                 }
             })
         } catch (error) {
@@ -325,11 +386,6 @@
 
 
     function clock(event) {
-        if (!localStorage.getItem("isVerifiedToken")) window.location.href = `verify.html`;
-        postAuthVerified(`${uri}/auth/auth/login/device`, localStorage.getItem('uid')).then((res) => {
-            if (res.statusCode === 401) window.location.href = `verify.html`;
-        })
-
         clockType = event
         document.getElementById('load').style.display = 'block';
         // hide the lorem ipsum text
