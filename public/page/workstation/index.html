@@ -127,13 +127,13 @@
                         return `<button type="button" value='${id}' onclick="editLocation(this)" class="btn btn-primary">Edit</button>`;
                     }
                 },
-                    // {
-                    //     data: 'id',
-                    //     render: function (data, type, row) {
-                    //         const id = data
-                    //         return `<button type="button" value='${id}' onclick="removeLocation(this)" class="btn btn-danger">Delete</button>`;
-                    //     }
-                    // }
+                {
+                    data: 'id',
+                    render: function (data, type, row) {
+                        const id = data
+                        return `<button type="button" value='${id}' onclick="removeLocation(this)" class="btn btn-danger">Delete</button>`;
+                    }
+                }
                 ]
             })
         })
