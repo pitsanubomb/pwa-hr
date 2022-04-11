@@ -47,7 +47,7 @@
             <a class="nav-link" aria-current="user" href="../page/user.html">User</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" aria-current="workspace" href="../page/workstation/">Workspace</a>
+            <a class="nav-link" aria-current="workspace" href="../page/workstation/">Location</a>
         </li>
     </ul>
     <div class="container">
@@ -113,13 +113,19 @@
                     data: 'uid',
                     render: function (data, type, row) {
                         const uid = data
-                        return `<button type="button" value='${uid}' onclick="getWorkstation(this)" class="btn btn-info">Workstation</button>`;
+                        return `<button type="button" value='${uid}' onclick="getWorkstation(this)" class="btn btn-info">Location</button>`;
                     }
                 }, {
                     data: 'uid',
                     render: function (data, type, row) {
                         const uid = data
                         return `<button type="button" value='${uid}' onclick="verifyDevice(this)" class="btn btn-info">Verify Device</button>`;
+                    }
+                }, {
+                    data: 'uid',
+                    render: function (data, type, row) {
+                        const uid = data
+                        return `<button type="button" value='${uid}' onclick="activeUser(this)" class="btn btn-info">SetActive</button>`;
                     }
                 }]
             })
@@ -138,6 +144,22 @@
     function updateUser({ value }) {
         console.log(value)
         window.location.href = `edit.html?uid=${value}`;
+    }
+
+    function activeUser({ value }) {
+        Swal.fire({
+            title: 'Do you want to Set active?',
+            showDenyButton: true,
+            confirmButtonText: 'Ok',
+            denyButtonText: `Cancel`,
+        }).then((result) => {
+            /* Read more about isConfirmed, isDenied below */
+            if (result.isConfirmed) {
+                pathAuth(`${uri}/user/active/${value}`).then(() => window.location.reload())
+            } else if (result.isDenied) {
+                Swal.fire('Cancel', '', 'info')
+            }
+        })
     }
 
     function delUser({ value }) {
